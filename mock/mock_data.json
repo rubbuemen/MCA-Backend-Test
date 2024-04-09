@@ -1,0 +1,52 @@
+[
+  {
+    "path": "/game-saga/1/related-sagas",
+    "body": "[2,3,4]",
+    "headers": {"Content-Type": "application/json"}
+  },
+  {
+    "path": "/game-saga/2/related-sagas",
+    "body": "[3, 7, 8]",
+    "headers": {"Content-Type": "application/json"}
+  },
+  {
+    "path": "/game-saga/3/related-sagas",
+    "body": "[7, 8, 9]",
+    "headers": {"Content-Type": "application/json"}
+  },
+  {
+    "path": "/game-saga/4/related-sagas",
+    "body": "[1, 2, 5]",
+    "headers": {"Content-Type": "application/json"}
+  },
+  {
+    "path": "/game-saga/5/related-sagas",
+    "body": "[1, 2, 6]",
+    "headers": {"Content-Type": "application/json"}
+  },
+   {
+    "path": "/game-saga/26/related-sagas",
+    "body": "[1, 100, 6]",
+    "headers": {"Content-Type": "application/json"}
+  },
+   {
+    "path": "/game-saga/37/related-sagas",
+    "body": "[1000, 7, 8]",
+    "headers": {"Content-Type": "application/json"}
+  },
+   {
+    "path": "/game-saga/18/related-sagas",
+    "body": "[1, 2, 10000]",
+    "headers": {"Content-Type": "application/json"}
+  },
+   {
+    "path": "/game-saga/12/related-sagas",
+    "body": " [20, 18, 19]",
+    "headers": {"Content-Type": "application/json"}
+  },
+   {
+    "path": "/game-saga/9/related-sagas",
+    "body": "[11, 15, 19]",
+    "headers": {"Content-Type": "application/json"}
+  }
+]

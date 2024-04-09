@@ -1,0 +1,72 @@
+openapi: 3.0.0
+info:
+  title: VideoGamesAPI
+  version: '1.0'
+tags:
+  - name: Videogames
+    description: Info from videogames
+paths:
+  '/game/{gameId}/saga':
+    get:
+      tags:
+        - Videogames
+      parameters:
+        - name: gameId
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sagas'
+        '500':
+          description: Internal Server Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    Sagas:
+      type: array
+      description: 'List of game sagas related to a given game ordered by relevance'
+      minItems: 0
+      uniqueItems: true
+      items:
+        $ref: '#/components/schemas/Game'
+    Game:
+      description: 'Game detail'
+      type: object
+      properties:
+        id:
+          type: string
+          minLength: 1
+        title:
+          type: string
+          minLength: 1
+        price:
+          type: number
+        availability:
+          type: boolean
+      required:
+        - id
+        - title
+        - price
+        - availability
+    Error:
+      description: 'Error detail'
+      type: object
+      properties:
+        code:
+          type: string
+          minLength: 1
+        description:
+          type: string
+          minLength: 1
+      required:
+        - code
+        - description

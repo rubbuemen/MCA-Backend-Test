@@ -1,0 +1,37 @@
+openapi: 3.0.0
+info:
+  title: gameSagaAPI
+  version: '1.0'
+servers:
+  - url: 'http://localhost:3000'
+paths:
+  '/game-saga/{gameId}/related-sagas':
+    parameters:
+      - schema:
+          type: string
+        name: gameId
+        in: path
+        required: true
+    get:
+      operationId: get-game-saga-related-sagas
+      summary: Gets the related game sagas
+      description: Returns the related game sagas to a given one ordered by relevance
+      responses:
+        '200':
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RelatedGameSagas'
+components:
+  schemas:
+    RelatedGameSagas:
+      type: array
+      description: 'List of related game saga IDs to a given one ordered by relevance'
+      minItems: 0
+      uniqueItems: true
+      items:
+        type: string
+
+
+       
