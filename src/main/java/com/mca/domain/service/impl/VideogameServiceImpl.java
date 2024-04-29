@@ -1,6 +1,5 @@
 package com.mca.domain.service.impl;
 
-import com.mca.infrastructure.exception.ServiceException;
 import com.mca.domain.mapper.GameMapper;
 import com.mca.domain.model.dto.GameDto;
 import com.mca.domain.repository.VideogameRepository;
@@ -32,13 +31,9 @@ public class VideogameServiceImpl implements VideogameService {
     @Override
     @Cacheable("videogames")
     public List<GameDto> getVideogamesWithStockAndPromotions(List<String> ids) {
-        try {
-            var dateLimit = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"));
-            var games = videogameRepository.findByIdsWithStockAndPromotionsUntilDate(ids, dateLimit);
-            games.sort(Comparator.comparingLong(i -> ids.indexOf(i.getId().toString())));
-            return games.stream().map(gameMapper::toDomain).toList();
-        } catch (Exception e) {
-            throw new ServiceException(e.getMessage());
-        }
+        var dateLimit = LocalDateTime.parse(date, DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSSX"));
+        var games = videogameRepository.findByIdsWithStockAndPromotionsUntilDate(ids, dateLimit);
+        games.sort(Comparator.comparingLong(i -> ids.indexOf(i.getId().toString())));
+        return games.stream().map(gameMapper::toDomain).toList();
     }
 }

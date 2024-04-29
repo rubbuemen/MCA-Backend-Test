@@ -22,7 +22,6 @@ public class Stock {
     private LocalDateTime lastUpdated;
 
     @OneToOne(fetch = FetchType.LAZY)
-    @MapsId
     @ToString.Exclude
     private Videogame videogame;
 

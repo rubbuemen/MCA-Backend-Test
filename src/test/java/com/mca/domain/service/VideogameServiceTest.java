@@ -6,7 +6,7 @@ import com.mca.domain.model.entity.Promotion;
 import com.mca.domain.model.entity.Stock;
 import com.mca.domain.model.entity.Videogame;
 import com.mca.domain.repository.VideogameRepository;
-import com.mca.infrastructure.exception.ServiceException;
+import org.hibernate.service.spi.ServiceException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;

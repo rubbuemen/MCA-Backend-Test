@@ -5,10 +5,11 @@ import com.mca.infrastructure.event.KafkaMessageProducer;
 import com.mca.infrastructure.event.VideoGameEvent;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
+import org.springframework.core.io.Resource;
 import org.springframework.kafka.annotation.EnableKafka;
-import org.springframework.scheduling.annotation.EnableScheduling;
-import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.util.ResourceUtils;
 
 import java.io.IOException;
@@ -22,11 +23,11 @@ import java.util.List;
 @Slf4j
 @EnableKafka
 @Configuration
-@EnableScheduling
-public class KafkaConfig {
+@Profile("!test")
+public class KafkaConfig implements CommandLineRunner {
 
-    @Value("${events.resource}")
-    private String resourceRoute;
+    @Value("classpath:events.csv")
+    Resource resourceFile;
 
     private final KafkaMessageProducer<String> kafkaMessageProducer;
 
@@ -37,19 +38,18 @@ public class KafkaConfig {
         this.gson = new Gson();
     }
 
-    @Scheduled(fixedRateString = "${kafka.producer.fixed.rate}")
-    public void run() {
+    @Override
+    public void run(String... args) throws Exception {
         List<VideoGameEvent> stocks;
         try {
-            stocks = Files.readAllLines(ResourceUtils.getFile(resourceRoute).toPath()).stream()
+            stocks = Files.readAllLines(ResourceUtils.getFile(resourceFile.getURL()).toPath()).stream()
                     .map(line -> convertStock(Arrays.asList(line.trim().split(",")))).toList();
-            stocks.forEach(stock -> kafkaMessageProducer.sendMessage(gson.toJson(stock)));
+            stocks.forEach(stock -> kafkaMessageProducer.sendMessage(String.valueOf(gson.toJson(stock))));
         } catch (IOException e) {
             log.error("Exception occurred while reading stock events: {}", e.getMessage());
         } catch (Exception e) {
             log.error("Exception occurred during topic send to Kafka: {}", e.getMessage());
         }
-
     }
 
     private VideoGameEvent convertStock(List<String> stock) {

@@ -1,78 +1,77 @@
 package com.mca.infrastructure.exception;
 
-import com.mca.domain.model.dto.ErrorDto;
+import com.mca.domain.model.dto.ApiError;
 import feign.FeignException;
-import feign.RetryableException;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.client.HttpServerErrorException;
+import org.springframework.web.servlet.resource.NoResourceFoundException;
 
 @RestControllerAdvice
 @Slf4j
 public class HandlerExceptionController {
 
-    private static final String LOG_PATTERN = " exception handler {}: {}";
-    private static final String GENERIC_DESCRIPTION = "There has been an error, please try later or contact with your administrator";
+    private static final String GENERIC_DESCRIPTION = "There has been an error, please try later or contact with your administrator to check logs";
 
-    @ExceptionHandler(Exception.class)
-    public ResponseEntity<ErrorDto> handleException(Exception ex) {
-        return switch (ex) {
-            case HttpServerErrorException e -> handleHttpServerErrorException(e);
-            case FeignException.NotFound e -> handleFeignNotFoundException(e);
-            case RetryableException e -> handleFeignRefusedConnectionException(e);
-            case IllegalArgumentException e -> handleIllegalArgumentException(e);
-            case ServiceException e -> handleServiceException(e);
-            default -> handleGenericException(ex);
-        };
-    }
-
-    private ResponseEntity<ErrorDto> handleGenericException(Exception ex) {
-        log.warn("Generic error".concat(LOG_PATTERN), ex.getClass(), ex.getMessage(), ex);
-        var err = ErrorDto.builder()
-                .code("Generic exception")
-                .description(GENERIC_DESCRIPTION).build();
-        return ResponseEntity.internalServerError().body(err);
-    }
-
-    private ResponseEntity<ErrorDto> handleHttpServerErrorException(HttpServerErrorException ex) {
-        log.warn("HTTP Server Error".concat(LOG_PATTERN), ex.getClass(), ex.getMessage(), ex);
-        var err = ErrorDto.builder()
-                .code("Server exception")
-                .description(GENERIC_DESCRIPTION).build();
+    @ExceptionHandler(NoResourceFoundException.class)
+    private ResponseEntity<ApiError> handleNoResourceFoundException(NoResourceFoundException ex) {
+        log.warn("NoResourceFoundException thrown {}: {}", ex.getClass(), ex.getMessage(), ex);
+        var err = ApiError.builder()
+                .message("Resource not found")
+                .description("The specified resource does not exist")
+                .code(ex.getStatusCode().value()).build();
         return ResponseEntity.status(ex.getStatusCode()).body(err);
     }
 
-    private ResponseEntity<ErrorDto> handleFeignNotFoundException(FeignException.NotFound ex) {
-        log.warn("Feign client not found error".concat(LOG_PATTERN), ex.getClass(), ex.getMessage(), ex);
-        var err = ErrorDto.builder()
-                .code("Client exception")
-                .description("There seems to be a problem connecting to the client providing the information, try again later or contact an administrator.").build();
-        return ResponseEntity.internalServerError().body(err);
+    @ExceptionHandler(GameRequestValidationException.class)
+    private ResponseEntity<ApiError> handleGameRequestValidationException(GameRequestValidationException ex) {
+        log.warn("GameRequestValidationException thrown {}: {}", ex.getClass(), ex.getMessage(), ex);
+        var err = ApiError.builder()
+                .message("Error in the validation of the game request")
+                .description(ex.getMessage())
+                .code(HttpStatus.BAD_REQUEST.value()).build();
+        return ResponseEntity.badRequest().body(err);
     }
 
-    private ResponseEntity<ErrorDto> handleFeignRefusedConnectionException(RetryableException ex) {
-        log.warn("Feign client refused connection".concat(LOG_PATTERN), ex.getClass(), ex.getMessage(), ex);
-        var err = ErrorDto.builder()
-                .code("Client exception")
-                .description("There seems to be a problem connecting to the client providing the information, try again later or contact an administrator.").build();
-        return ResponseEntity.internalServerError().body(err);
+    @ExceptionHandler(FeignException.class)
+    private ResponseEntity<ApiError> handleFeignException(FeignException ex) {
+        log.warn("FeignException thrown {}: {}", ex.getClass(), ex.getMessage(), ex);
+        ApiError err;
+        if (ex.status() == 404) {
+            err = ApiError.builder()
+                    .message("Feigned resource not found")
+                    .description("The specified resource could not be obtained from feign client")
+                    .code(ex.status()).build();
+        } else if (ex.status() == 400) {
+            err = ApiError.builder()
+                    .message("Feigned resource not validated")
+                    .description("The specified resource could not be validated")
+                    .code(ex.status()).build();
+        } else if (ex.status() == -1) {
+            err = ApiError.builder()
+                    .message("Problem with feign client")
+                    .description("The feign client may not be available at this time.")
+                    .code(HttpStatus.SERVICE_UNAVAILABLE.value()).build();
+            return ResponseEntity.status(HttpStatus.SERVICE_UNAVAILABLE.value()).body(err);
+        } else {
+            err = ApiError.builder()
+                    .message("Problem with feign client")
+                    .description(GENERIC_DESCRIPTION)
+                    .code(ex.status()).build();
+        }
+        return ResponseEntity.status(ex.status()).body(err);
     }
 
-    private ResponseEntity<ErrorDto> handleIllegalArgumentException(IllegalArgumentException ex) {
-        log.warn("Illegal argument error".concat(LOG_PATTERN), ex.getClass(), ex.getMessage(), ex);
-        var err = ErrorDto.builder()
-                .code("Illegal argument exception")
-                .description(ex.getMessage()).build();
-        return ResponseEntity.internalServerError().body(err);
-    }
-
-    private ResponseEntity<ErrorDto> handleServiceException(ServiceException ex) {
-        log.warn("Service error".concat(LOG_PATTERN), ex.getClass(), ex.getMessage(), ex);
-        var err = ErrorDto.builder()
-                .code("Service exception")
-                .description(ex.getMessage()).build();
+    @ExceptionHandler(Exception.class)
+    private ResponseEntity<ApiError> handleGenericException(Exception ex) {
+        log.warn("Generic exception thrown {}: {}", ex.getClass(), ex.getMessage(), ex);
+        var err = ApiError.builder()
+                .message("Ups! Something occurred")
+                .description(GENERIC_DESCRIPTION)
+                .code(HttpStatus.INTERNAL_SERVER_ERROR.value()).build();
         return ResponseEntity.internalServerError().body(err);
     }
 }
+

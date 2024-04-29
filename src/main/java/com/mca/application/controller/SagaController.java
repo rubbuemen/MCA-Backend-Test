@@ -3,6 +3,7 @@ package com.mca.application.controller;
 import com.mca.application.client.SagaClient;
 import com.mca.domain.model.dto.GameDto;
 import com.mca.domain.service.VideogameService;
+import com.mca.infrastructure.exception.GameRequestValidationException;
 import lombok.AllArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
@@ -23,9 +24,9 @@ public class SagaController {
     @GetMapping("/game/{gameId}/saga")
     public ResponseEntity<List<GameDto>> getSagaGamesByGameId(@PathVariable String gameId) {
         if (!gameId.matches("^\\d+$")){
-            throw new IllegalArgumentException("The path variable is not a valid number ID.");
+            throw new GameRequestValidationException("The path variable " +  gameId + " is not a valid number ID");
         }
-        log.info("Requesting related video games for ID: {}", gameId);
+        log.info("Requesting related videogames for ID: {}", gameId);
         var resGamesId = sagaClient.getGamesBySagaId(gameId);
         var games = videogameService.getVideogamesWithStockAndPromotions(resGamesId.getBody());
         return ResponseEntity.ok(games);

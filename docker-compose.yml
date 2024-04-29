@@ -1,22 +1,8 @@
 version: '3'
 
 services:
-  mca-backend:
-    container_name: mca-backend
-    build:
-      dockerfile: dockerfile
-    ports:
-      - "8081:8080"
-    environment:
-      - SPRING_PROFILES_ACTIVE=docker # Change to local or docker
-    depends_on:
-      - simulado
-      - zookeeper-server
-      - kafka-server
-      - kafdrop-server
   simulado:
     image : ldabiralai/simulado:latest
-    container_name: simulado-games
     ports:
       - "3000:80"
     volumes:
@@ -50,8 +36,7 @@ services:
       - ALLOW_PLAINTEXT_LISTENER=yes
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CLIENT:PLAINTEXT,EXTERNAL:PLAINTEXT
       - KAFKA_CFG_LISTENERS=CLIENT://:9092,EXTERNAL://:19093
-      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://kafka-server:9092,EXTERNAL://kafka-server:19093
-      # KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://localhost:9092,EXTERNAL://localhost:19093
+      - KAFKA_CFG_ADVERTISED_LISTENERS=CLIENT://host.docker.internal:9092,EXTERNAL://localhost:19093
       - KAFKA_INTER_BROKER_LISTENER_NAME=CLIENT
       - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
     restart: unless-stopped
@@ -81,6 +66,4 @@ services:
       - "traefik.http.services.kafdrop.loadbalancer.server.port=9000"
       - "traefik.http.routers.kafdrop.rule=Host(`kafdrop.localhost`)"
       - "traefik.http.routers.kafdrop.entrypoints=web"
-
-      
   
