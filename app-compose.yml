@@ -1,0 +1,15 @@
+version: '3'
+
+services:
+  mca-backend:
+    container_name: mca-backend
+    build:
+      dockerfile: integration/Dockerfile
+    restart: on-failure
+    ports:
+      - "8080:8080"
+    environment:
+      - SPRING_PROFILES_ACTIVE=docker
+    networks:
+      - default
+
